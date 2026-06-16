@@ -1,6 +1,6 @@
 ## powerfullz 的 Mihomo/Substore 覆写规则
 
-[![](https://data.jsdelivr.com/v1/package/gh/powerfullz/override-rules/badge?style=rounded)](https://www.jsdelivr.com/package/gh/powerfullz/override-rules)
+[![](https://data.jsdelivr.com/v1/package/gh/CodeIntegrity/override-rules/badge?style=rounded)](https://www.jsdelivr.com/package/gh/CodeIntegrity/override-rules)
 
 本仓库为 Mihomo/Substore 设计，提供高效、灵活的覆写规则（**不建议用于 Stash**）。核心特色如下：
 
@@ -36,7 +36,7 @@
 > [!TIP]
 > Clash Party 不支持给脚本传入参数，如果需要传入参数，请使用集成的 Substore。
 
-1.  推荐直接使用 JS 动态覆写：`https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js`
+1.  推荐直接使用 JS 动态覆写：`https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js`
 2.  打开 Clash Party → 左侧「覆写」→ 粘贴上述链接导入。
 3.  打开「订阅管理」→ 目标订阅右上角三个点 → 「编辑信息」→ 选择该覆写脚本 → 保存。
 
@@ -86,19 +86,19 @@
 想要国家/地区代理组自动选择延迟最低的节点，使用`grouptype=1`参数，在 Substore「脚本操作」处填入脚本链接：
 
 ```
-https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#grouptype=1
+https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js#grouptype=1
 ```
 
 有链式代理和多个节点提供商之间负载均衡的需求，使用`landing=true&grouptype=2`两个参数：
 
 ```
-https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#landing=true&grouptype=2
+https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js#landing=true&grouptype=2
 ```
 
 想让地区代理组使用 smart 智能选路（需 smart 内核），并让香港、台湾改用自动测速，使用 `grouptype=3` 配合 `smartexclude`、`smartfallback`：
 
 ```
-https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#grouptype=3&smartexclude=香港,台湾&smartfallback=1
+https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js#grouptype=3&smartexclude=香港,台湾&smartfallback=1
 ```
 
 如果想第一时间体验最新加入的 ~~Bug~~ 功能，可以使用 preview 分支的 Github Raw 链接：
@@ -159,12 +159,12 @@ config_gt-{0|1|2}_landing-{0|1}_ipv6-{0|1}_full-{0|1}_keepalive-{0|1}_fakeip-{0|
 
 **获取示例（开启 full，其余关闭）：**
 ```text
-https://cdn.jsdelivr.net/gh/powerfullz/override-rules/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
+https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
 ```
 
 **固定版本获取示例：**
 ```text
-https://cdn.jsdelivr.net/gh/powerfullz/override-rules@v0.1.0/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
+https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules@v0.1.0/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
 ```
 
 如果使用镜像：
