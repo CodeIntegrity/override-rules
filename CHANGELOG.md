@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.1](https://github.com/CodeIntegrity/override-rules/compare/src-v2.5.0...src-v2.5.1) (2026-06-16)
+
+
+### Documentation
+
+- 发版授权声明更新为 CodeIntegrity 组织维护者 ([6750072](https://github.com/CodeIntegrity/override-rules/commit/6750072b7658aa1feecc2918f9d53845bccd7db9))
+
+
+### Refactoring
+
+- 数据化代理组生成并精简 YAML 生成器 ([1a9a382](https://github.com/CodeIntegrity/override-rules/commit/1a9a382e8e1619c635708e3e5e7cf04032b0270a))
 ## [2.5.0](https://github.com/CodeIntegrity/override-rules/compare/src-v2.4.3...src-v2.5.0) (2026-06-16)
 
 
