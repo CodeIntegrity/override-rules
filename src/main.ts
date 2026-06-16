@@ -24,15 +24,14 @@ https://github.com/CodeIntegrity/override-rules
 源码已迁移至 `src/*.ts`。
 */
 
-import { CDN_URL, PROXY_GROUPS } from "./constants";
+import { CDN_URL, NODE_SUFFIX, PROXY_GROUPS } from "./constants";
 import { buildFeatureFlags } from "./args";
 import { buildCountryProxyGroups, buildProxyGroups } from "./proxy_groups";
 import {
-    getCountryGroupNames,
+    getSortedCountries,
     parseCountries,
     parseLowCost,
     parseNodesByLanding,
-    stripNodeSuffix,
 } from "./node_parser";
 import { buildRules } from "./rules";
 import { ruleProviders } from "./rule_providers";
@@ -87,8 +86,8 @@ const smartOptions = {
 function main(config: ClashConfig): ClashConfig {
     const countryInfo = parseCountries(config, landing);
     const lowCostNodes = parseLowCost(config);
-    const countryGroupNames = getCountryGroupNames(countryInfo, countryThreshold);
-    const countries = stripNodeSuffix(countryGroupNames);
+    const countries = getSortedCountries(countryInfo, countryThreshold);
+    const countryGroupNames = countries.map((country) => country + NODE_SUFFIX);
 
     const { landingNodes, nonLandingNodes } = landing
         ? parseNodesByLanding(config)

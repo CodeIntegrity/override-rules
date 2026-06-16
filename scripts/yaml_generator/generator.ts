@@ -56,16 +56,6 @@ interface VmSandbox extends Record<string, unknown> {
     main?: (config: ClashConfig) => ClashConfig;
 }
 
-const FLAG_SHORT_NAMES: Record<FlagName, string> = {
-    landing: "landing",
-    ipv6: "ipv6",
-    full: "full",
-    keepalive: "keepalive",
-    fakeip: "fakeip",
-    quic: "quic",
-    tun: "tun",
-};
-
 function loadFakeConfig(): ClashConfig {
     const raw = readFileSync(FAKE_PROXIES_FILE, "utf-8");
     const json = JSON.parse(raw) as ClashConfig;
@@ -93,30 +83,24 @@ function generateArgCombos(): ComboArgs[] {
     return combos;
 }
 
-function runConvert(baseConfig: ClashConfig, args: ComboArgs): ClashConfig {
-    const code = readFileSync(CONVERT_FILE, "utf-8");
+function runConvert(script: vm.Script, baseConfig: ClashConfig, args: ComboArgs): ClashConfig {
     const sandbox: VmSandbox = {
         $arguments: { ...args.flags, grouptype: String(args.grouptype), regex: true },
         console,
     };
 
-    vm.createContext(sandbox);
-    vm.runInContext(code, sandbox, { filename: "convert.js" });
+    const context = vm.createContext(sandbox);
+    script.runInContext(context);
 
     if (typeof sandbox.main !== "function") {
         throw new Error("convert.js 未暴露 main 函数 (未在顶层定义?)");
     }
 
-    const configCopy = JSON.parse(JSON.stringify(baseConfig)) as ClashConfig;
-    return sandbox.main(configCopy);
-}
-
-function getShortName(flag: FlagName): string {
-    return FLAG_SHORT_NAMES[flag];
+    return sandbox.main(structuredClone(baseConfig));
 }
 
 function fileNameFromArgs(args: ComboArgs): string {
-    const flagParts = FLAGS.map((flag) => `${getShortName(flag)}-${Number(args.flags[flag])}`);
+    const flagParts = FLAGS.map((flag) => `${flag}-${Number(args.flags[flag])}`);
     return `config_gt-${args.grouptype}_${flagParts.join("_")}.yaml`;
 }
 
@@ -127,7 +111,7 @@ function ensureDir(dirPath: string): void {
 }
 
 function cleanupLegacyYamlFiles(): void {
-    const flagPatterns = FLAGS.map((flag) => `${getShortName(flag)}-\\d`);
+    const flagPatterns = FLAGS.map((flag) => `${flag}-\\d`);
     const currentPattern = new RegExp(`^config_gt-\\d_${flagPatterns.join("_")}\\.yaml$`);
 
     for (const fileName of readdirSync(OUTPUT_DIR)) {
@@ -162,6 +146,8 @@ export function main(): void {
         throw new Error("未找到 convert.js，请先运行 npm run build");
     }
 
+    // convert.js 与组合无关，读取并编译一次，每个组合仅在新 context 中执行。
+    const script = new vm.Script(readFileSync(CONVERT_FILE, "utf-8"), { filename: "convert.js" });
     const baseConfig = loadFakeConfig();
     ensureDir(OUTPUT_DIR);
     cleanupLegacyYamlFiles();
@@ -175,7 +161,7 @@ export function main(): void {
     for (const args of combos) {
         if (count >= limit) break;
 
-        const config = runConvert(baseConfig, args);
+        const config = runConvert(script, baseConfig, args);
         delete config.proxies;
 
         const yaml = toYAML(config);

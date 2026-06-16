@@ -148,6 +148,14 @@ export function buildProxyGroups({
     const hasHK = countries.includes("香港");
     const hasUS = countries.includes("美国");
 
+    // 仅名称/图标不同、统一为 select + defaultProxies 的功能分组助手。
+    const sel = (name: string, icon: string): ProxyGroup => ({
+        name,
+        icon,
+        type: "select",
+        proxies: defaultProxies,
+    });
+
     const groups: Array<ProxyGroup | null> = [
         {
             name: PROXY_GROUPS.SELECT,
@@ -185,54 +193,23 @@ export function buildProxyGroups({
                       : { proxies: landingNodes }),
               }
             : null,
-        {
-            name: PROXY_GROUPS.STATIC_RESOURCES,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.AI_SERVICE,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.CRYPTO,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cryptocurrency_1.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.APPLE,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Apple_2.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.GOOGLE,
-            icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.MICROSOFT,
-            icon: `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Microsoft_Copilot.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.XBOX,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.GITHUB,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
+        sel(
+            PROXY_GROUPS.STATIC_RESOURCES,
+            `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`
+        ),
+        sel(PROXY_GROUPS.AI_SERVICE, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`),
+        sel(
+            PROXY_GROUPS.CRYPTO,
+            `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cryptocurrency_1.png`
+        ),
+        sel(PROXY_GROUPS.APPLE, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Apple_2.png`),
+        sel(PROXY_GROUPS.GOOGLE, `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`),
+        sel(
+            PROXY_GROUPS.MICROSOFT,
+            `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Microsoft_Copilot.png`
+        ),
+        sel(PROXY_GROUPS.XBOX, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`),
+        sel(PROXY_GROUPS.GITHUB, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`),
         {
             name: PROXY_GROUPS.BILIBILI,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/bilibili.png`,
@@ -247,48 +224,16 @@ export function buildProxyGroups({
                 ? ["台湾节点", PROXY_GROUPS.SELECT, PROXY_GROUPS.MANUAL, "DIRECT"]
                 : defaultProxies,
         },
-        {
-            name: PROXY_GROUPS.YOUTUBE,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.TWITCH,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Twitch.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.NETFLIX,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Netflix.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.TIKTOK,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/TikTok.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.SPOTIFY,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Spotify.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.TELEGRAM,
-            icon: `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Telegram.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.TWITTER,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Twitter.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
+        sel(PROXY_GROUPS.YOUTUBE, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`),
+        sel(PROXY_GROUPS.TWITCH, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Twitch.png`),
+        sel(PROXY_GROUPS.NETFLIX, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Netflix.png`),
+        sel(PROXY_GROUPS.TIKTOK, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/TikTok.png`),
+        sel(PROXY_GROUPS.SPOTIFY, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Spotify.png`),
+        sel(
+            PROXY_GROUPS.TELEGRAM,
+            `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Telegram.png`
+        ),
+        sel(PROXY_GROUPS.TWITTER, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Twitter.png`),
         {
             name: PROXY_GROUPS.WEIBO,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Weibo.png`,
@@ -304,30 +249,21 @@ export function buildProxyGroups({
                 ? ["美国节点", PROXY_GROUPS.SELECT, PROXY_GROUPS.MANUAL]
                 : defaultProxies,
         },
-        {
-            name: PROXY_GROUPS.EHENTAI,
-            icon: `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Ehentai.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
-        {
-            name: PROXY_GROUPS.PIKPAK,
-            icon: `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/PikPak.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
+        sel(
+            PROXY_GROUPS.EHENTAI,
+            `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Ehentai.png`
+        ),
+        sel(
+            PROXY_GROUPS.PIKPAK,
+            `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/PikPak.png`
+        ),
         {
             name: PROXY_GROUPS.SOGOU_INPUT,
             icon: `${CDN_URL}/gh/CodeIntegrity/override-rules@master/icons/Sougou.png`,
             type: "select",
             proxies: ["DIRECT", "REJECT"],
         },
-        {
-            name: PROXY_GROUPS.SSH,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Server.png`,
-            type: "select",
-            proxies: defaultProxies,
-        },
+        sel(PROXY_GROUPS.SSH, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Server.png`),
         {
             name: PROXY_GROUPS.FINAL,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,

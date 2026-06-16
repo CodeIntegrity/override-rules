@@ -1,14 +1,9 @@
-import {
-    LANDING_NODE_MATCHER,
-    NODE_SUFFIX,
-    LOW_COST_NODE_MATCHER,
-    countriesMeta,
-} from "./constants";
+import { LANDING_NODE_MATCHER, LOW_COST_NODE_MATCHER, countriesMeta } from "./constants";
 import type { ClashConfig, CountryInfoItem } from "./types";
 
 const COUNTRY_REGEX_MAP = Object.fromEntries(
     Object.entries(countriesMeta).map(([country, meta]) => {
-        return [country, new RegExp(meta.pattern.replace(/^\(\?i\)/, ""))];
+        return [country, new RegExp(meta.pattern)];
     })
 ) as Record<string, RegExp>;
 
@@ -81,29 +76,19 @@ export function parseCountries(config: ClashConfig, landing = false): CountryInf
 }
 
 /**
- * 根据最小节点数量阈值过滤地区，并按权重排序后返回带后缀的地区分组名称列表。
+ * 根据最小节点数量阈值过滤地区，并按权重升序排序，返回纯地区名称列表（不含后缀）。
+ * 带后缀的分组名由调用方按需拼接 `NODE_SUFFIX` 得到，避免「加后缀又剥离」的往返。
  * @param countryInfo - 由 `parseCountries` 返回的地区节点信息数组
  * @param minCount - 地区节点数量的最小阈值，节点数不足该值的地区将被过滤掉
- * @returns 按权重升序排列、附加了节点后缀（`NODE_SUFFIX`）的地区分组名称数组
+ * @returns 按权重升序排列的纯地区名称数组（不含 `NODE_SUFFIX` 后缀）
  */
-export function getCountryGroupNames(countryInfo: CountryInfoItem[], minCount: number): string[] {
-    const filtered = countryInfo.filter((item) => item.nodes.length >= minCount);
-
-    filtered.sort((a, b) => {
-        const wa = countriesMeta[a.country]?.weight ?? Infinity;
-        const wb = countriesMeta[b.country]?.weight ?? Infinity;
-        return wa - wb;
-    });
-
-    return filtered.map((item) => item.country + NODE_SUFFIX);
-}
-
-/**
- * 移除分组名称末尾的节点后缀（`NODE_SUFFIX`），还原为纯地区名称。
- * @param groupNames - 带节点后缀的分组名称数组，通常来自 `getCountryGroupNames`
- * @returns 去除后缀后的地区名称数组
- */
-export function stripNodeSuffix(groupNames: string[]): string[] {
-    const suffixPattern = new RegExp(`${NODE_SUFFIX}$`);
-    return groupNames.map((name) => name.replace(suffixPattern, ""));
+export function getSortedCountries(countryInfo: CountryInfoItem[], minCount: number): string[] {
+    return countryInfo
+        .filter((item) => item.nodes.length >= minCount)
+        .sort((a, b) => {
+            const wa = countriesMeta[a.country]?.weight ?? Infinity;
+            const wb = countriesMeta[b.country]?.weight ?? Infinity;
+            return wa - wb;
+        })
+        .map((item) => item.country);
 }
