@@ -12,6 +12,7 @@ import type {
     CountryInfoItem,
     GroupType,
     ProxyGroup,
+    SmartOptions,
 } from "./types";
 import { isNotNull } from "./utils";
 
@@ -20,11 +21,12 @@ interface BuildGroupByTypeInput {
     icon: string;
     groupType: GroupType;
     nodeSource: Pick<ProxyGroup, "proxies" | "include-all" | "filter" | "exclude-filter">;
+    smart: SmartOptions;
 }
 
 /**
  * 根据代理组类型生成对应的代理组配置。
- * 将 groupType 映射为具体的类型字段（select/url-test/load-balance），
+ * 将 groupType 映射为具体的类型字段（select/url-test/load-balance/smart），
  * 并与节点来源字段合并，消除各处重复的 switch 逻辑。
  */
 function buildGroupByType({
@@ -32,6 +34,7 @@ function buildGroupByType({
     icon,
     groupType,
     nodeSource,
+    smart,
 }: BuildGroupByTypeInput): ProxyGroup {
     switch (groupType) {
         case 0:
@@ -57,6 +60,16 @@ function buildGroupByType({
                 tolerance: 20,
                 ...nodeSource,
             };
+        case 3:
+            return {
+                name,
+                icon,
+                type: "smart",
+                uselightgbm: smart.uselightgbm,
+                ...(smart.collectdata ? { collectdata: true } : {}),
+                ...(smart.preferAsn ? { "prefer-asn": true } : {}),
+                ...nodeSource,
+            };
     }
 }
 
@@ -68,6 +81,9 @@ function buildGroupByType({
  * @param input.groupType - 代理组类型：0=select, 1=url-test, 2=load-balance
  * @param input.regexFilter - 是否使用正则过滤模式（`include-all` + `filter`）
  * @param input.countryInfo - 地区节点信息数组，用于非正则模式下直接枚举节点名称
+ * @param input.smartExclude - grouptype=3 时不走 smart 的地区名列表（不含「节点」后缀）
+ * @param input.smartFallback - 被排除地区的回退类型（0=select, 1=url-test, 2=load-balance）
+ * @param input.smart - smart 组的可配置项（uselightgbm/collectdata/prefer-asn）
  * @returns 生成的地区代理组配置数组
  */
 export function buildCountryProxyGroups({
@@ -76,6 +92,9 @@ export function buildCountryProxyGroups({
     groupType,
     regexFilter,
     countryInfo,
+    smartExclude,
+    smartFallback,
+    smart,
 }: BuildCountryProxyGroupsInput): ProxyGroup[] {
     const groups: ProxyGroup[] = [];
 
@@ -83,12 +102,18 @@ export function buildCountryProxyGroups({
         ? Object.fromEntries(countryInfo.map((item: CountryInfoItem) => [item.country, item.nodes]))
         : null;
 
+    const excludeSet = new Set(smartExclude);
+
     for (const country of countries) {
         const meta = countriesMeta[country];
         if (!meta) continue;
 
         const name = `${country}${NODE_SUFFIX}`;
         const icon = meta.icon;
+
+        // grouptype=3 且该地区被排除时，回退为 smartFallback 类型；其余沿用 groupType。
+        const effectiveType: GroupType =
+            groupType === 3 && excludeSet.has(country) ? smartFallback : groupType;
 
         const nodeSource = !regexFilter
             ? { proxies: nodesByCountry?.[country] ?? [] }
@@ -98,7 +123,7 @@ export function buildCountryProxyGroups({
                   ...(landing ? { "exclude-filter": LANDING_NODE_MATCHER.pattern } : {}),
               };
 
-        groups.push(buildGroupByType({ name, icon, groupType, nodeSource }));
+        groups.push(buildGroupByType({ name, icon, groupType: effectiveType, nodeSource, smart }));
     }
 
     return groups;
@@ -117,6 +142,7 @@ export function buildProxyGroups({
     defaultSelector,
     defaultFallback,
     frontProxySelector,
+    smart,
 }: BuildProxyGroupsInput): ProxyGroup[] {
     const hasTW = countries.includes("台湾");
     const hasHK = countries.includes("香港");
@@ -340,6 +366,7 @@ export function buildProxyGroups({
                   nodeSource: !regexFilter
                       ? { proxies: lowCostNodes }
                       : { "include-all": true as const, filter: LOW_COST_NODE_MATCHER.pattern },
+                  smart,
               })
             : null,
         ...countryProxyGroups,

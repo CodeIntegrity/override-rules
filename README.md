@@ -54,7 +54,12 @@
 
 目前支持的参数：
 
-*   `grouptype`：地区代理组类型（0=手动选择 select，1=自动测速 url-test，2=负载均衡 load-balance，默认 0）
+*   `grouptype`：地区代理组类型（0=手动选择 select，1=自动测速 url-test，2=负载均衡 load-balance，3=智能选路 smart，默认 0）[^smart]
+*   `smartexclude`：仅 `grouptype=3` 生效。不走 smart 的地区名列表，逗号分隔（如 `香港,台湾`，地区名不含「节点」后缀，默认空）
+*   `smartfallback`：仅 `grouptype=3` 生效。被 `smartexclude` 排除的地区的回退类型（0=select，1=url-test，2=load-balance，默认 0）
+*   `smartlightgbm`：仅 `grouptype=3` 生效。smart 组使用 LightGBM 模型预测节点权重（`uselightgbm`，默认 true）
+*   `smartcollect`：仅 `grouptype=3` 生效。smart 组采集训练数据（`collectdata`，默认 false）
+*   `smartpreferasn`：仅 `grouptype=3` 生效。smart 组选路优先匹配 ASN（`prefer-asn`，默认 false）
 *   `landing`：启用落地节点功能（如机场家宽/星链/落地分组，默认 false）[^landing]
 *   `ipv6`：启用 IPv6 支持（默认 false）
 *   `full`：生成完整配置（适合纯内核启动，默认 false）
@@ -68,6 +73,7 @@
 > **向后兼容**：旧的 `loadbalance` 参数仍然可用。当 `grouptype` 未指定时，`loadbalance=true` 等价于 `grouptype=2`，`loadbalance=false` 等价于 `grouptype=1`。
 
 [^landing]: 注意在默认的枚举模式下，如果没有符合条件的落地节点（e.g 名称中带有「家宽」、「商宽」、「落地」等关键词的节点），内核会无法启动。
+[^smart]: `smart` 组（`type: smart`）需 [OpenClash mihomo smart 内核](https://github.com/vernesong/OpenClash/releases/tag/mihomo)支持，普通 Mihomo 内核无法识别会导致启动失败。
 [^quic]: 默认屏蔽了 QUIC 流量防止节点 UDP 性能不佳影响上网体验，如果确信节点质量良好，建议设置为 true。
 [^regex]: 默认情况下覆写脚本会直接把节点都筛选好，如果想让内核来筛（比如，你在 Clash Party 客户端里额外添加了自建节点，想直接通过正则表达式筛选进入配置文件）那就打开吧。
 
@@ -87,6 +93,12 @@ https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#grouptype=1
 
 ```
 https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#landing=true&grouptype=2
+```
+
+想让地区代理组使用 smart 智能选路（需 smart 内核），并让香港、台湾改用自动测速，使用 `grouptype=3` 配合 `smartexclude`、`smartfallback`：
+
+```
+https://cdn.jsdelivr.net/gh/powerfullz/override-rules/convert.min.js#grouptype=3&smartexclude=香港,台湾&smartfallback=1
 ```
 
 如果想第一时间体验最新加入的 ~~Bug~~ 功能，可以使用 preview 分支的 Github Raw 链接：

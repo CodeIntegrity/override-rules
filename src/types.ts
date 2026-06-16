@@ -10,9 +10,21 @@ export interface ScriptArgs {
     regex?: string;
     threshold?: string;
     tun?: string;
+    smartexclude?: string;
+    smartfallback?: string;
+    smartlightgbm?: string;
+    smartcollect?: string;
+    smartpreferasn?: string;
 }
 
-export type GroupType = 0 | 1 | 2;
+export type GroupType = 0 | 1 | 2 | 3;
+
+/** smart 组的可配置项，从 FeatureFlags 打包后透传给组构建函数。 */
+export interface SmartOptions {
+    uselightgbm: boolean;
+    collectdata: boolean;
+    preferAsn: boolean;
+}
 
 export interface FeatureFlags {
     groupType: GroupType;
@@ -25,6 +37,11 @@ export interface FeatureFlags {
     regexFilter: boolean;
     countryThreshold: number;
     tunEnabled: boolean;
+    smartExclude: string[];
+    smartFallback: GroupType;
+    smartLightgbm: boolean;
+    smartCollect: boolean;
+    smartPreferAsn: boolean;
 }
 
 export interface ProxyNode {
@@ -35,7 +52,7 @@ export interface ProxyNode {
     [key: string]: unknown;
 }
 
-export type ProxyGroupType = "select" | "url-test" | "load-balance" | "fallback";
+export type ProxyGroupType = "select" | "url-test" | "load-balance" | "fallback" | "smart";
 
 export type LoadBalanceStrategy = "sticky-sessions" | "consistent-hashing" | "round-robin";
 
@@ -74,11 +91,19 @@ export interface FallbackProxyGroup extends BaseProxyGroup {
     tolerance: number;
 }
 
+export interface SmartProxyGroup extends BaseProxyGroup {
+    type: "smart";
+    uselightgbm: boolean;
+    collectdata?: boolean;
+    "prefer-asn"?: boolean;
+}
+
 export type ProxyGroup =
     | SelectProxyGroup
     | UrlTestProxyGroup
     | LoadBalanceProxyGroup
-    | FallbackProxyGroup;
+    | FallbackProxyGroup
+    | SmartProxyGroup;
 
 export interface SnifferProtocolConfig {
     ports: number[];
@@ -209,6 +234,9 @@ export interface BuildCountryProxyGroupsInput {
     groupType: GroupType;
     regexFilter: boolean;
     countryInfo: CountryInfoItem[];
+    smartExclude: string[];
+    smartFallback: GroupType;
+    smart: SmartOptions;
 }
 
 export interface BuildProxyGroupsInput {
@@ -224,4 +252,5 @@ export interface BuildProxyGroupsInput {
     defaultSelector: string[];
     defaultFallback: string[];
     frontProxySelector: string[];
+    smart: SmartOptions;
 }

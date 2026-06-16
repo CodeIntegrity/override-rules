@@ -4,7 +4,7 @@
  * 组合不同参数调用其 main(config) 生成 Clash/Stash 配置，并输出为 YAML 文件。
  *
  * 支持的布尔参数在下面的 FLAGS 数组中定义，与 convert.js 内保持一致。
- * grouptype 参数（0=select, 1=url-test, 2=load-balance）控制代理组类型。
+ * grouptype 参数（0=select, 1=url-test, 2=load-balance, 3=smart）控制代理组类型。
  * 生成所有可能的参数组合（布尔标志 × grouptype），文件名基于参数动态生成。
  *
  * 可通过环境变量 LIMIT_COMBOS（整数）限制生成前 N 个组合。
@@ -40,7 +40,7 @@ const FLAGS = ["landing", "ipv6", "full", "keepalive", "fakeip", "quic", "tun"] 
 type FlagName = (typeof FLAGS)[number];
 type FlagArgs = Record<FlagName, boolean>;
 
-const GROUPTYPE_VALUES = [0, 1, 2] as const;
+const GROUPTYPE_VALUES = [0, 1, 2, 3] as const;
 type GroupTypeValue = (typeof GROUPTYPE_VALUES)[number];
 
 type GeneratorScriptArgs = { [K in FlagName]: boolean } & { regex: true; grouptype: string };
