@@ -13,22 +13,6 @@
 
 > 本项目为本人自用，欢迎交流建议（Issue/PR）。如无特殊反馈，将优先满足个人需求与体验优化。
 
-[点击访问 Forgejo 上的镜像](https://git.l3zc.com/powerfullz/override-rules)
-
-### AFF
-
-#### FlowerCloud
-
-[注册链接](https://api-flowercloud.com/aff.php?aff=4352)
-
-目前我的主力机场，也是一家老牌一线机场了，线路扎实，冗余足够，实验性节点0.2倍率，部分地区的高级节点是家宽落地，用起来还是很舒服的。
-
-#### 星岛梦
-
-[注册链接](https://luics.xdmvipaff.cc/#/?code=MMB4xSlc)
-
-星岛梦是一家 2025 年 12 月刚开业的机场，机场主在测试的时候就来找我了，我因此有幸从早期测试阶段便开始关注，见证了机场主熬夜修线路换落地的过程，目前体验还不错。算上日常折扣性价比还可以，大家可以月付体验一下。
-
 ### 使用方法
 
 **Clash Party/Sparkle**
@@ -36,9 +20,9 @@
 > [!TIP]
 > Clash Party 不支持给脚本传入参数，如果需要传入参数，请使用集成的 Substore。
 
-1.  推荐直接使用 JS 动态覆写：`https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js`
-2.  打开 Clash Party → 左侧「覆写」→ 粘贴上述链接导入。
-3.  打开「订阅管理」→ 目标订阅右上角三个点 → 「编辑信息」→ 选择该覆写脚本 → 保存。
+1. 推荐直接使用 JS 动态覆写：`https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/convert.min.js`
+2. 打开 Clash Party → 左侧「覆写」→ 粘贴上述链接导入。
+3. 打开「订阅管理」→ 目标订阅右上角三个点 → 「编辑信息」→ 选择该覆写脚本 → 保存。
 
 需要注意，Clash Party 在默认设置下还会接管 DNS 和 SNI（域名嗅探），需要手动在设置中关闭「控制 DNS 设置」和「控制域名嗅探」两个选项。
 
@@ -54,21 +38,21 @@
 
 目前支持的参数：
 
-*   `grouptype`：地区代理组类型（0=手动选择 select，1=自动测速 url-test，2=负载均衡 load-balance，3=智能选路 smart，默认 0）[^smart]
-*   `smartexclude`：仅 `grouptype=3` 生效。不走 smart 的地区名列表，逗号分隔（如 `香港,台湾`，地区名不含「节点」后缀，默认空）
-*   `smartfallback`：仅 `grouptype=3` 生效。被 `smartexclude` 排除的地区的回退类型（0=select，1=url-test，2=load-balance，默认 0）
-*   `smartlightgbm`：仅 `grouptype=3` 生效。smart 组使用 LightGBM 模型预测节点权重（`uselightgbm`，默认 true）
-*   `smartcollect`：仅 `grouptype=3` 生效。smart 组采集训练数据（`collectdata`，默认 false）
-*   `smartpreferasn`：仅 `grouptype=3` 生效。smart 组选路优先匹配 ASN（`prefer-asn`，默认 false）
-*   `landing`：启用落地节点功能（如机场家宽/星链/落地分组，默认 false）[^landing]
-*   `ipv6`：启用 IPv6 支持（默认 false）
-*   `full`：生成完整配置（适合纯内核启动，默认 false）
-*   `keepalive`：启用 TCP Keep Alive（默认 false）[^fn2]
-*   `fakeip`：DNS 增强模式使用 `fake-ip` 而不是 `redir-host`（开启后可能有助于解决 TUN 模式无法上网的问题；未传参时默认 `true`，显式传 `false` 时使用 `redir-host`）
-*   `quic`：允许 QUIC 流量（UDP 443，默认 false）[^quic]
-*   `regex`：各国家/地区代理组改用 `include-all` + 正则过滤模式，由 Mihomo 内核在运行时按正则动态筛选节点，而非在脚本执行时枚举节点名称（默认 false）[^regex]
-*   `tun`：启用 TUN 模式（gvisor 栈，自动配置路由排除地址与 DNS 劫持，默认 false）
-*   `threshold`：国家/地区节点数量小于该值时不显示分组（默认 0）
+* `grouptype`：地区代理组类型（0=手动选择 select，1=自动测速 url-test，2=负载均衡 load-balance，3=智能选路 smart，默认 0）[^smart]
+* `smartexclude`：仅 `grouptype=3` 生效。不走 smart 的地区名列表，逗号分隔（如 `香港,台湾`，地区名不含「节点」后缀，默认空）
+* `smartfallback`：仅 `grouptype=3` 生效。被 `smartexclude` 排除的地区的回退类型（0=select，1=url-test，2=load-balance，默认 0）
+* `smartlightgbm`：仅 `grouptype=3` 生效。smart 组使用 LightGBM 模型预测节点权重（`uselightgbm`，默认 true）
+* `smartcollect`：仅 `grouptype=3` 生效。smart 组采集训练数据（`collectdata`，默认 false）
+* `smartpreferasn`：仅 `grouptype=3` 生效。smart 组选路优先匹配 ASN（`prefer-asn`，默认 false）
+* `landing`：启用落地节点功能（如机场家宽/星链/落地分组，默认 false）[^landing]
+* `ipv6`：启用 IPv6 支持（默认 false）
+* `full`：生成完整配置（适合纯内核启动，默认 false）
+* `keepalive`：启用 TCP Keep Alive（默认 false）[^fn2]
+* `fakeip`：DNS 增强模式使用 `fake-ip` 而不是 `redir-host`（开启后可能有助于解决 TUN 模式无法上网的问题；未传参时默认 `true`，显式传 `false` 时使用 `redir-host`）
+* `quic`：允许 QUIC 流量（UDP 443，默认 false）[^quic]
+* `regex`：各国家/地区代理组改用 `include-all` + 正则过滤模式，由 Mihomo 内核在运行时按正则动态筛选节点，而非在脚本执行时枚举节点名称（默认 false）[^regex]
+* `tun`：启用 TUN 模式（gvisor 栈，自动配置路由排除地址与 DNS 劫持，默认 false）
+* `threshold`：国家/地区节点数量小于该值时不显示分组（默认 0）
 
 > **向后兼容**：旧的 `loadbalance` 参数仍然可用。当 `grouptype` 未指定时，`loadbalance=true` 等价于 `grouptype=2`，`loadbalance=false` 等价于 `grouptype=1`。
 
@@ -148,8 +132,8 @@ proxies:
 
 获取 YAML 覆写文件的链接格式如下：
 
-- **最新正式版**：`/yamls/*.yaml` (默认主分支或不带分支名)
-- **特定历史版本**：`@vX.Y.Z/yamls/*.yaml`
+* **最新正式版**：`/yamls/*.yaml` (默认主分支或不带分支名)
+* **特定历史版本**：`@vX.Y.Z/yamls/*.yaml`
 
 文件命名规则依据支持的开关参数穷举，格式如下：
 
@@ -158,16 +142,19 @@ config_gt-{0|1|2}_landing-{0|1}_ipv6-{0|1}_full-{0|1}_keepalive-{0|1}_fakeip-{0|
 ```
 
 **获取示例（开启 full，其余关闭）：**
+
 ```text
 https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
 ```
 
 **固定版本获取示例：**
+
 ```text
 https://cdn.jsdelivr.net/gh/CodeIntegrity/override-rules@v0.1.0/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
 ```
 
 如果使用镜像：
+
 ```text
 https://git.l3zc.com/powerfullz/override-rules/raw/branch/dist/yamls/config_gt-0_landing-0_ipv6-0_full-1_keepalive-0_fakeip-0_quic-0_tun-0.yaml
 ```
