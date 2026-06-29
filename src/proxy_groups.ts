@@ -1,19 +1,12 @@
 import {
     CDN_URL,
-    LANDING_NODE_MATCHER,
     LOW_COST_NODE_MATCHER,
     NODE_SUFFIX,
     PROXY_GROUPS,
+    SPEEDTEST_URL,
     countriesMeta,
 } from "./constants";
-import type {
-    BuildCountryProxyGroupsInput,
-    BuildProxyGroupsInput,
-    CountryInfoItem,
-    GroupType,
-    ProxyGroup,
-    SmartOptions,
-} from "./types";
+import type { BuildProxyGroupsInput, GroupType, ProxyGroup, SmartOptions } from "./types";
 import { isNotNull } from "./utils";
 
 interface BuildGroupByTypeInput {
@@ -44,7 +37,7 @@ function buildGroupByType({
                 name,
                 icon,
                 type: "url-test",
-                url: "https://cp.cloudflare.com/generate_204",
+                url: SPEEDTEST_URL,
                 interval: 60,
                 tolerance: 20,
                 ...nodeSource,
@@ -55,7 +48,7 @@ function buildGroupByType({
                 icon,
                 type: "load-balance",
                 strategy: "sticky-sessions",
-                url: "https://cp.cloudflare.com/generate_204",
+                url: SPEEDTEST_URL,
                 interval: 60,
                 tolerance: 20,
                 ...nodeSource,
@@ -74,79 +67,31 @@ function buildGroupByType({
 }
 
 /**
- * 为每个地区生成对应的代理组配置。
- * @param input - 构建地区代理组所需的输入参数
- * @param input.countries - 需要生成代理组的地区名称列表（不含后缀）
- * @param input.landing - 是否启用落地节点模式；启用时将排除落地节点
- * @param input.groupType - 代理组类型：0=select, 1=url-test, 2=load-balance
- * @param input.regexFilter - 是否使用正则过滤模式（`include-all` + `filter`）
- * @param input.countryInfo - 地区节点信息数组，用于非正则模式下直接枚举节点名称
- * @param input.smartExclude - grouptype=3 时不走 smart 的地区名列表（不含「节点」后缀）
- * @param input.smartFallback - 被排除地区的回退类型（0=select, 1=url-test, 2=load-balance）
- * @param input.smart - smart 组的可配置项（uselightgbm/collectdata/prefer-asn）
- * @returns 生成的地区代理组配置数组
+ * 生成所有代理组配置，包含内联的国家地区代理组。
+ * @param input - 构建代理组所需的输入参数（详见 BuildProxyGroupsInput）
+ * @returns 代理组配置数组
  */
-export function buildCountryProxyGroups({
-    countries,
-    landing,
-    groupType,
-    regexFilter,
-    countryInfo,
-    smartExclude,
-    smartFallback,
-    smart,
-}: BuildCountryProxyGroupsInput): ProxyGroup[] {
-    const groups: ProxyGroup[] = [];
-
-    const nodesByCountry: Record<string, string[]> | null = !regexFilter
-        ? Object.fromEntries(countryInfo.map((item: CountryInfoItem) => [item.country, item.nodes]))
-        : null;
-
-    const excludeSet = new Set(smartExclude);
-
-    for (const country of countries) {
-        const meta = countriesMeta[country];
-        if (!meta) continue;
-
-        const name = `${country}${NODE_SUFFIX}`;
-        const icon = meta.icon;
-
-        // grouptype=3 且该地区被排除时，回退为 smartFallback 类型；其余沿用 groupType。
-        const effectiveType: GroupType =
-            groupType === 3 && excludeSet.has(country) ? smartFallback : groupType;
-
-        const nodeSource = !regexFilter
-            ? { proxies: nodesByCountry?.[country] ?? [] }
-            : {
-                  "include-all": true as const,
-                  filter: meta.pattern,
-                  ...(landing ? { "exclude-filter": LANDING_NODE_MATCHER.pattern } : {}),
-              };
-
-        groups.push(buildGroupByType({ name, icon, groupType: effectiveType, nodeSource, smart }));
-    }
-
-    return groups;
-}
-
 export function buildProxyGroups({
-    landing,
     regexFilter,
     groupType,
-    countries,
-    countryProxyGroups,
+    countryNames,
+    countryNodes,
     lowCostNodes,
+    landing,
     landingNodes,
     defaultProxies,
     defaultProxiesDirect,
     defaultSelector,
     defaultFallback,
     frontProxySelector,
+    smartExclude,
+    smartFallback,
     smart,
 }: BuildProxyGroupsInput): ProxyGroup[] {
-    const hasTW = countries.includes("台湾");
-    const hasHK = countries.includes("香港");
-    const hasUS = countries.includes("美国");
+    const hasTW = countryNames.includes("台湾");
+    const hasHK = countryNames.includes("香港");
+    const hasUS = countryNames.includes("美国");
+    const smartExcludeSet = new Set(smartExclude);
 
     // 仅名称/图标不同、统一为 select + defaultProxies 的功能分组助手。
     const sel = (name: string, icon: string): ProxyGroup => ({
@@ -174,13 +119,7 @@ export function buildProxyGroups({
                   name: PROXY_GROUPS.FRONT_PROXY,
                   icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Area.png`,
                   type: "select",
-                  ...(regexFilter
-                      ? {
-                            "include-all": true,
-                            "exclude-filter": LANDING_NODE_MATCHER.pattern,
-                            proxies: frontProxySelector,
-                        }
-                      : { proxies: frontProxySelector }),
+                  proxies: frontProxySelector,
               }
             : null,
         landing
@@ -188,9 +127,7 @@ export function buildProxyGroups({
                   name: PROXY_GROUPS.LANDING,
                   icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Airport.png`,
                   type: "select",
-                  ...(regexFilter
-                      ? { "include-all": true, filter: LANDING_NODE_MATCHER.pattern }
-                      : { proxies: landingNodes }),
+                  proxies: landingNodes.map((node) => node.name).filter(isNotNull),
               }
             : null,
         sel(
@@ -265,6 +202,12 @@ export function buildProxyGroups({
         },
         sel(PROXY_GROUPS.SSH, `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Server.png`),
         {
+            name: PROXY_GROUPS.AD_BLOCK,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/AdBlack.png`,
+            type: "select",
+            proxies: ["REJECT", "REJECT-DROP", "DIRECT"],
+        },
+        {
             name: PROXY_GROUPS.FINAL,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,
             type: "select",
@@ -274,7 +217,7 @@ export function buildProxyGroups({
             name: PROXY_GROUPS.AUTO,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Auto.png`,
             type: "url-test",
-            url: "https://cp.cloudflare.com/generate_204",
+            url: SPEEDTEST_URL,
             proxies: defaultFallback,
             interval: 60,
             tolerance: 20,
@@ -283,16 +226,10 @@ export function buildProxyGroups({
             name: PROXY_GROUPS.FALLBACK,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
             type: "fallback",
-            url: "https://cp.cloudflare.com/generate_204",
+            url: SPEEDTEST_URL,
             proxies: defaultFallback,
             interval: 60,
             tolerance: 20,
-        },
-        {
-            name: PROXY_GROUPS.AD_BLOCK,
-            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/AdBlack.png`,
-            type: "select",
-            proxies: ["REJECT", "REJECT-DROP", "DIRECT"],
         },
         lowCostNodes.length > 0 || regexFilter
             ? buildGroupByType({
@@ -300,12 +237,32 @@ export function buildProxyGroups({
                   icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Lab.png`,
                   groupType,
                   nodeSource: !regexFilter
-                      ? { proxies: lowCostNodes }
+                      ? { proxies: lowCostNodes.map((node) => node.name).filter(isNotNull) }
                       : { "include-all": true as const, filter: LOW_COST_NODE_MATCHER.pattern },
                   smart,
               })
             : null,
-        ...countryProxyGroups,
+        ...countryNames.map((country) => {
+            const meta = countriesMeta[country];
+            if (!meta) return null;
+
+            const effectiveType: GroupType =
+                groupType === 3 && smartExcludeSet.has(country) ? smartFallback : groupType;
+            const nodeSource = regexFilter
+                ? {
+                      "include-all": true as const,
+                      filter: meta.pattern,
+                  }
+                : { proxies: countryNodes[country]?.map((node) => node.name).filter(isNotNull) };
+
+            return buildGroupByType({
+                name: `${country}${NODE_SUFFIX}`,
+                icon: meta.icon,
+                groupType: effectiveType,
+                nodeSource,
+                smart,
+            });
+        }),
     ];
 
     return groups.filter(isNotNull);
